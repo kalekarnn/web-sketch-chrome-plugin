@@ -13,20 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const brushSize = document.getElementById('brush-size');
   const sizeDisplay = document.getElementById('size-display');
   
-  // Action buttons
-  const undoBtn = document.getElementById('undo-btn');
-  const redoBtn = document.getElementById('redo-btn');
-  const saveBtn = document.getElementById('save-btn');
-  
-  // Persistent mode
-  const persistentMode = document.getElementById('persistent-mode');
-  
   // Current drawing settings
   let currentSettings = {
     tool: 'pencil',
     color: '#000000',
-    size: 3,
-    persistent: false
+    size: 3
   };
   
   // Initialize with stored settings or defaults
@@ -52,8 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
       
       brushSize.value = currentSettings.size;
       sizeDisplay.textContent = currentSettings.size + 'px';
-      
-      persistentMode.checked = currentSettings.persistent;
       
       console.log('UI updated with stored settings');
     }
@@ -83,22 +72,20 @@ document.addEventListener('DOMContentLoaded', function() {
   
   clearAll.addEventListener('click', function() {
     console.log('Clear all button clicked');
-    if (confirm('Are you sure you want to clear all drawings?')) {
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        if (tabs && tabs[0] && tabs[0].id) {
-          console.log('Sending clearAll message to tab:', tabs[0].id);
-          chrome.tabs.sendMessage(tabs[0].id, {action: 'clearAll'}, function(response) {
-            if (chrome.runtime.lastError) {
-              console.error('Error sending clearAll message:', chrome.runtime.lastError);
-            } else {
-              console.log('Clear all response:', response);
-            }
-          });
-        } else {
-          console.error('No active tab found for clearAll');
-        }
-      });
-    }
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (tabs && tabs[0] && tabs[0].id) {
+        console.log('Sending clearAll message to tab:', tabs[0].id);
+        chrome.tabs.sendMessage(tabs[0].id, {action: 'clearAll'}, function(response) {
+          if (chrome.runtime.lastError) {
+            console.error('Error sending clearAll message:', chrome.runtime.lastError);
+          } else {
+            console.log('Clear all response:', response);
+          }
+        });
+      } else {
+        console.error('No active tab found for clearAll');
+      }
+    });
   });
   
   // Color selection handler
@@ -127,89 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
     sizeDisplay.textContent = size + 'px';
     saveSettings();
     sendMessageToContent();
-  });
-  
-  // Action button handlers
-  undoBtn.addEventListener('click', function() {
-    console.log('Undo button clicked');
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs && tabs[0] && tabs[0].id) {
-        console.log('Sending undo message to tab:', tabs[0].id);
-        chrome.tabs.sendMessage(tabs[0].id, {action: 'undo'}, function(response) {
-          if (chrome.runtime.lastError) {
-            console.error('Error sending undo message:', chrome.runtime.lastError);
-          } else {
-            console.log('Undo response:', response);
-          }
-        });
-      } else {
-        console.error('No active tab found for undo');
-      }
-    });
-  });
-  
-  redoBtn.addEventListener('click', function() {
-    console.log('Redo button clicked');
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs && tabs[0] && tabs[0].id) {
-        console.log('Sending redo message to tab:', tabs[0].id);
-        chrome.tabs.sendMessage(tabs[0].id, {action: 'redo'}, function(response) {
-          if (chrome.runtime.lastError) {
-            console.error('Error sending redo message:', chrome.runtime.lastError);
-          } else {
-            console.log('Redo response:', response);
-          }
-        });
-      } else {
-        console.error('No active tab found for redo');
-      }
-    });
-  });
-  
-  saveBtn.addEventListener('click', function() {
-    console.log('Save as image button clicked');
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs && tabs[0] && tabs[0].id) {
-        console.log('Sending saveAsImage message to tab:', tabs[0].id);
-        chrome.tabs.sendMessage(tabs[0].id, {action: 'saveAsImage'}, function(response) {
-          if (chrome.runtime.lastError) {
-            console.error('Error sending saveAsImage message:', chrome.runtime.lastError);
-          } else {
-            console.log('Save as image response:', response);
-          }
-        });
-      } else {
-        console.error('No active tab found for saveAsImage');
-      }
-    });
-  });
-  
-  // Persistent mode handler
-  persistentMode.addEventListener('change', function() {
-    const isPersistent = this.checked;
-    console.log('Persistent mode changed:', isPersistent);
-    
-    currentSettings.persistent = isPersistent;
-    saveSettings();
-    sendMessageToContent();
-  });
-  
-  // Listen for messages from content script
-  chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-    console.log('Message received in popup:', message);
-    
-    if (message.action === 'updateUndoRedoState') {
-      undoBtn.disabled = !message.canUndo;
-      redoBtn.disabled = !message.canRedo;
-      console.log('Updated undo/redo buttons state - canUndo:', message.canUndo, 'canRedo:', message.canRedo);
-      
-      // Send response if needed
-      if (sendResponse) {
-        sendResponse({success: true});
-      }
-    }
-    
-    return true; // Keep the message channel open for async responses
   });
   
   // Save settings to storage
@@ -244,4 +148,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-}); 
+});

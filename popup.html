@@ -4,49 +4,55 @@
   <title>Webpage Drawing Tool</title>
   <link rel="stylesheet" href="popup.css">
 </head>
-<body>
+<body style="background-color: #f0f4f8;">
   <div class="container">
-    <h1>Webpage Drawing Tool</h1>
-    
     <div class="tool-section">
       <h2>Drawing Tools</h2>
       <div class="tools">
-        <button id="pencil-tool" class="tool-btn active" title="Pencil Tool">
+        <button id="pencil-tool" class="tool-btn active" title="Pencil Tool (Draw)">
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
           </svg>
+          <span>Pencil</span>
         </button>
-        <button id="eraser-tool" class="tool-btn" title="Eraser Tool">
+        <button id="eraser-tool" class="tool-btn" title="Eraser Tool (Erase)">
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.77-.78 2.04 0 2.83L5.03 20h7.94l8.92-8.92c.79-.78.79-2.05 0-2.83l-5.34-5.34c-.39-.39-.9-.59-1.41-.59zM5.44 18L3 15.56l9.76-9.76 2.12 2.12.71.71L5.44 18z"/>
           </svg>
+          <span>Eraser</span>
         </button>
-        <button id="clear-all" class="tool-btn" title="Clear All">
+        <button id="clear-all" class="tool-btn" title="Clear All Drawings">
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
+          <span>Clear</span>
         </button>
       </div>
     </div>
     
     <div class="tool-section">
-      <h2>Color</h2>
+      <h2>Color Picker</h2>
       <div class="color-picker">
-        <button class="color-btn active" data-color="#000000" style="background-color: #000000;"></button>
-        <button class="color-btn" data-color="#FF0000" style="background-color: #FF0000;"></button>
-        <button class="color-btn" data-color="#0000FF" style="background-color: #0000FF;"></button>
-        <button class="color-btn" data-color="#00FF00" style="background-color: #00FF00;"></button>
-        <button class="color-btn" data-color="#FFFF00" style="background-color: #FFFF00;"></button>
-        <button class="color-btn" data-color="#FF00FF" style="background-color: #FF00FF;"></button>
+        <button class="color-btn active" data-color="#000000" style="background-color: #000000;" aria-label="Black"></button>
+        <button class="color-btn" data-color="#FF0000" style="background-color: #FF0000;" aria-label="Red"></button>
+        <button class="color-btn" data-color="#0000FF" style="background-color: #0000FF;" aria-label="Blue"></button>
+        <button class="color-btn" data-color="#00FF00" style="background-color: #00FF00;" aria-label="Green"></button>
+        <button class="color-btn" data-color="#FFFF00" style="background-color: #FFFF00;" aria-label="Yellow"></button>
+        <button class="color-btn" data-color="#FF00FF" style="background-color: #FF00FF;" aria-label="Magenta"></button>
       </div>
     </div>
     
     <div class="tool-section">
       <h2>Brush Size</h2>
-      <input type="range" id="brush-size" min="1" max="20" value="3">
-      <span id="size-display">3px</span>
+      <div class="brush-size-container">
+        <input type="range" id="brush-size" min="1" max="20" value="3" aria-label="Brush Size">
+        <span id="size-display">3px</span>
+      </div>
     </div>
   </div>
   <script src="popup.js"></script>
+  <footer style="text-align: center; margin-top: 20px; font-size: 14px; color: #555;">
+    Alt+D: Toggle drawing mode on/off
+  </footer>
 </body>
-</html> 
+</html>

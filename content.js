@@ -5,8 +5,6 @@ let currentX = 0;
 let currentY = 0;
 let drawingCanvas = null;
 let ctx = null;
-let drawingHistory = [];
-let redoHistory = [];
 let currentSettings = {
   tool: 'pencil',
   color: '#000000',
@@ -87,9 +85,6 @@ function handleTouchStart(e) {
   ctx.beginPath();
   ctx.moveTo(currentX, currentY);
   
-  // Save current state for undo
-  saveCurrentState();
-  
   console.log('Touch drawing started at', currentX, currentY);
 }
 
@@ -128,7 +123,6 @@ function handleTouchEnd(e) {
   e.preventDefault();
   if (isDrawing) {
     isDrawing = false;
-    updateUndoRedoState();
   }
 }
 
@@ -177,9 +171,6 @@ function startDrawing(e) {
   ctx.beginPath();
   ctx.moveTo(currentX, currentY);
   
-  // Save current state for undo
-  saveCurrentState();
-  
   console.log('Drawing started at', currentX, currentY);
 }
 
@@ -219,7 +210,6 @@ function draw(e) {
 function stopDrawing() {
   if (isDrawing) {
     isDrawing = false;
-    updateUndoRedoState();
   }
 }
 
@@ -272,206 +262,18 @@ function showModeIndicator() {
   }
 }
 
-// Save current canvas state for undo
-function saveCurrentState() {
-  if (!ctx || !drawingCanvas) return;
-  
-  try {
-    const imageData = ctx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-    drawingHistory.push(imageData);
-    
-    // Clear redo history when new drawing occurs
-    redoHistory = [];
-    
-    // Update undo/redo state
-    updateUndoRedoState();
-  } catch (e) {
-    console.error('Error saving canvas state:', e);
-  }
-}
-
-// Undo last drawing action
-function undo() {
-  if (drawingHistory.length > 0 && ctx && drawingCanvas) {
-    try {
-      // Save current state to redo history
-      const currentState = ctx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-      redoHistory.push(currentState);
-      
-      // Pop the last state from history
-      const previousState = drawingHistory.pop();
-      
-      // Clear canvas
-      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      
-      // Restore previous state
-      if (previousState) {
-        ctx.putImageData(previousState, 0, 0);
-      }
-      
-      // Update undo/redo state
-      updateUndoRedoState();
-      
-      console.log('Undo performed');
-    } catch (e) {
-      console.error('Error during undo:', e);
-    }
-  }
-}
-
-// Redo last undone action
-function redo() {
-  if (redoHistory.length > 0 && ctx && drawingCanvas) {
-    try {
-      // Save current state to undo history
-      const currentState = ctx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
-      drawingHistory.push(currentState);
-      
-      // Pop the last state from redo history
-      const nextState = redoHistory.pop();
-      
-      // Clear canvas
-      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      
-      // Restore next state
-      if (nextState) {
-        ctx.putImageData(nextState, 0, 0);
-      }
-      
-      // Update undo/redo state
-      updateUndoRedoState();
-      
-      console.log('Redo performed');
-    } catch (e) {
-      console.error('Error during redo:', e);
-    }
-  }
-}
-
 // Clear all drawings
 function clearAll() {
   if (ctx && drawingCanvas) {
     try {
-      // Save current state for undo
-      saveCurrentState();
-      
       // Clear canvas
       ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      
-      // Update undo/redo state
-      updateUndoRedoState();
       
       console.log('Canvas cleared');
     } catch (e) {
       console.error('Error clearing canvas:', e);
     }
   }
-}
-
-// Save canvas as image
-function saveAsImage() {
-  if (drawingCanvas) {
-    try {
-      // Temporarily hide the drawing canvas to capture the webpage
-      const originalDisplay = drawingCanvas.style.display;
-      drawingCanvas.style.display = 'none';
-      
-      // Load html2canvas if not already loaded
-      loadHtml2Canvas().then(() => {
-        // Capture webpage as image
-        html2canvas(document.body, {
-          useCORS: true,
-          allowTaint: true,
-          foreignObjectRendering: true,
-          logging: true,
-          scale: window.devicePixelRatio,
-          backgroundColor: null
-        }).then(webpageCanvas => {
-          // Show drawing canvas again
-          drawingCanvas.style.display = originalDisplay;
-          
-          // Create a composite canvas
-          const compositeCanvas = document.createElement('canvas');
-          compositeCanvas.width = window.innerWidth;
-          compositeCanvas.height = window.innerHeight;
-          const compositeCtx = compositeCanvas.getContext('2d');
-          
-          // Draw webpage first
-          compositeCtx.drawImage(webpageCanvas, 0, 0);
-          
-          // Draw our drawings on top
-          compositeCtx.drawImage(drawingCanvas, 0, 0);
-          
-          // Convert to image and download
-          const link = document.createElement('a');
-          link.download = 'webpage-drawing.png';
-          link.href = compositeCanvas.toDataURL('image/png', 1.0);
-          link.click();
-          
-          console.log('Image saved with webpage content and drawings');
-        }).catch(err => {
-          console.error('Error capturing webpage:', err);
-          
-          // Show drawing canvas again
-          drawingCanvas.style.display = originalDisplay;
-          
-          // Fallback: just save the drawing without the webpage
-          const link = document.createElement('a');
-          link.download = 'drawing.png';
-          link.href = drawingCanvas.toDataURL('image/png', 1.0);
-          link.click();
-          
-          console.log('Fallback image saved (drawing only)');
-        });
-      }).catch(err => {
-        console.error('Error loading html2canvas:', err);
-        
-        // Show drawing canvas again
-        drawingCanvas.style.display = originalDisplay;
-        
-        // Fallback: just save the drawing without the webpage
-        const link = document.createElement('a');
-        link.download = 'drawing.png';
-        link.href = drawingCanvas.toDataURL('image/png', 1.0);
-        link.click();
-        
-        console.log('Fallback image saved (drawing only)');
-      });
-    } catch (e) {
-      console.error('Error saving image:', e);
-    }
-  }
-}
-
-// Update undo/redo buttons state
-function updateUndoRedoState() {
-  chrome.runtime.sendMessage({
-    action: 'updateUndoRedoState',
-    canUndo: drawingHistory.length > 0,
-    canRedo: redoHistory.length > 0
-  });
-}
-
-// Load html2canvas library for saving as image
-function loadHtml2Canvas() {
-  return new Promise((resolve, reject) => {
-    if (window.html2canvas) {
-      resolve();
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
-    script.onload = () => {
-      console.log('html2canvas loaded successfully');
-      resolve();
-    };
-    script.onerror = (err) => {
-      console.error('Failed to load html2canvas:', err);
-      reject(err);
-    };
-    document.head.appendChild(script);
-  });
 }
 
 // Initialize immediately and also when DOM is ready
@@ -531,17 +333,8 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       currentSettings = message.settings;
       console.log('Settings updated:', currentSettings);
       break;
-    case 'undo':
-      undo();
-      break;
-    case 'redo':
-      redo();
-      break;
     case 'clearAll':
       clearAll();
-      break;
-    case 'saveAsImage':
-      saveAsImage();
       break;
   }
   
@@ -551,4 +344,4 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   }
   
   return true; // Keep the message channel open for async responses
-}); 
+});

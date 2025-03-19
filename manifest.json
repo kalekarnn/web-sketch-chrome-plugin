@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Webpage Drawing Tool",
+  "name": "WebSketch",
   "version": "1.0",
   "description": "Draw directly on any webpage with various tools and colors",
   "permissions": ["activeTab", "storage"],

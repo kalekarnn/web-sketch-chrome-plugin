@@ -56,10 +56,6 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       sendResponse(settings);
     });
     return true; // Required for async sendResponse
-  } else if (message.action === 'updateUndoRedoState') {
-    console.log('Undo/Redo state updated:', message);
-    // This message is handled by the popup, but we log it here for debugging
-    return false;
   }
   
   return false;

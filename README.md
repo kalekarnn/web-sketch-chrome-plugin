@@ -1,7 +1,3 @@
-<div align="center">
-  <img src="https://github.com/kalekarnn/web-sketch-chrome-plugin/blob/main/images/icon128.png" alt="Alt text" title="WebSketch" />
-</div>
-
 # WebSketch : Webpage Drawing Tool
 
 A Chrome extension that lets you draw directly on any webpage with various tools and colors.
